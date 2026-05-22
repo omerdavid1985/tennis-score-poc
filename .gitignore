@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# VS Code
+.vscode/
+
+# Output videos/results
+data/output/
+
+# OS
+.DS_Store
+Thumbs.db
