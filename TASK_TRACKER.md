@@ -3,8 +3,8 @@
 ## Project Status
 
 - [v] Milestone 0 — Project Bootstrap
-- [ ] Milestone 1 — Manual Court Calibration
-- [ ] Milestone 2 — Ball Detection Baseline
+- [v] Milestone 1 — Manual Court Calibration
+- [v] Milestone 2 — Ball Detection Baseline
 - [ ] Milestone 3 — Ball Tracking
 - [ ] Milestone 4 — Player Detection
 - [ ] Milestone 5 — Bounce and Hit Candidates
@@ -126,6 +126,9 @@
 - [v] Integrate tennis-ball-specific YOLO model
 - [x] Cache AI detections to disk
 - [x] Load cached detections
+- [x] Add motion-based detection filtering
+- [x] Filter static false positives
+- [x] Add trajectory history visualization
 - [x] Measure processing FPS
 ---
 
@@ -133,8 +136,8 @@
 
 - [v] Evaluate missed detections
 - [v] Evaluate false positives
-- [ ] Add confidence filtering
-- [ ] Restrict detections to court region
+- [v] Add confidence filtering
+- [v] Restrict detections to court region
 
 ---
 
@@ -150,12 +153,12 @@
 ## Tracking Logic
 
 - [v] Create tracking module
-- [ ] Add Kalman filter
+- [v] Add Kalman filter
 - [ ] Predict next ball position
 - [ ] Match detections to prediction
 - [ ] Reject impossible jumps
 - [v] Handle temporary missed detections
-- [ ] Draw trajectory line
+- [v] Draw trajectory line
 - [ ] Export tracked trajectory CSV
 
 ---

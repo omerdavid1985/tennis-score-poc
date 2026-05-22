@@ -35,6 +35,8 @@ from detection.detection_io import (
     save_ball_detections_csv,
 )
 
+from detection.motion_filter import MotionFilter, draw_motion_mask_preview
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -170,14 +172,16 @@ def main() -> None:
     confidence_threshold=0.10,
     )
 
+    motion_filter = MotionFilter()
+
+    ball_tracker = BallTracker(trajectory_length=120)
+
     cached_detections = load_ball_detections_csv(BALL_DETECTIONS_FILE)
 
     if cached_detections:
         print(f"Loaded cached ball detections: {BALL_DETECTIONS_FILE}")
     else:
         print("No cached ball detections found. YOLO will run.")
-
-    ball_tracker = BallTracker()
 
     # -------------------------------------------------------------------------
     # Reset video back to frame 0
@@ -231,19 +235,40 @@ def main() -> None:
 
         # Run detection on the clean camera frame before drawing overlays.
         # This avoids detecting our own court lines, mini-map, or debug text.
+        # Build motion mask from the clean camera frame.
+        motion_mask = motion_filter.build_motion_mask(frame)
+
+        # Load or run YOLO detections.
         if frame_idx in cached_detections:
             detections = cached_detections[frame_idx]
         else:
             detections = ball_detector.detect(frame)
             detections_by_frame[frame_idx] = detections
 
+        # Keep only YOLO detections that overlap with moving pixels.
+        motion_filtered_detections = motion_filter.filter_detections(
+            detections,
+            motion_mask,
+        )
+
+        # Track only motion-filtered detections.
+        tracked_ball = ball_tracker.update(motion_filtered_detections)
+
         # Draw visualization overlays only after detection is complete.
         frame = draw_court_lines(frame, corners)
         frame = draw_mini_top_down_court(frame)
-        tracked_ball = ball_tracker.update(detections)
+        # Raw YOLO detections can be noisy, so draw only filtered detections for now.
+        frame = draw_yolo_ball_detections(frame, motion_filtered_detections)
 
-        frame = draw_yolo_ball_detections(frame, detections)
-        frame = draw_tracked_ball(frame, tracked_ball)
+        frame = draw_tracked_ball(
+            frame,
+            tracked_ball,
+            ball_tracker.trajectory,
+        )
+
+        # Optional debug preview.
+        frame = draw_motion_mask_preview(frame, motion_mask)
+        
         # ---------------------------------------------------------------------
         # Debug information overlay
         # ---------------------------------------------------------------------
