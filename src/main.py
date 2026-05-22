@@ -12,6 +12,8 @@ from geometry.court_detector import (
 
 from geometry.homography import compute_image_to_court_homography, image_point_to_court
 
+from visualization.draw import draw_mini_top_down_court
+
 INPUT_VIDEO = Path("data/input/sample_match.mp4")
 OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -70,6 +72,8 @@ def main() -> None:
         time_sec = frame_idx / fps if fps > 0 else 0.0
 
         frame = draw_court_lines(frame, corners)
+
+        frame = draw_mini_top_down_court(frame) 
 
         cv2.putText(
             frame,

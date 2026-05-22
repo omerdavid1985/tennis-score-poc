@@ -88,7 +88,7 @@
 - [v] Load calibration JSON
 - [v] Draw court overlay
 - [v] Validate overlay alignment
-
+- [v] Draw mini top-down court
 ---
 
 ## Git Setup
@@ -99,7 +99,7 @@
 
 ## Optional Enhancements
 
-- [ ] Draw mini top-down court
+
 - [v] Add calibration visualization
 - [ ] Add recalibration shortcut
 
