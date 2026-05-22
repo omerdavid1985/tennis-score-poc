@@ -30,12 +30,18 @@ from tracking.ball_tracker import BallTracker, draw_tracked_ball
 
 import time
 
+from detection.detection_io import (
+    load_ball_detections_csv,
+    save_ball_detections_csv,
+)
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
 
 INPUT_VIDEO = Path("data/input/sample_match.mp4")
 OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
+BALL_DETECTIONS_FILE = Path("data/output/ball_detections.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -163,6 +169,14 @@ def main() -> None:
     model_path="models/ball/tennis_ball_yolov8.pt",
     confidence_threshold=0.10,
     )
+
+    cached_detections = load_ball_detections_csv(BALL_DETECTIONS_FILE)
+
+    if cached_detections:
+        print(f"Loaded cached ball detections: {BALL_DETECTIONS_FILE}")
+    else:
+        print("No cached ball detections found. YOLO will run.")
+
     ball_tracker = BallTracker()
 
     # -------------------------------------------------------------------------
@@ -190,6 +204,7 @@ def main() -> None:
 
     start_time = time.time()
     processed_frames = 0
+    detections_by_frame = {}
 
     # -------------------------------------------------------------------------
     # Main frame-processing loop
@@ -216,7 +231,11 @@ def main() -> None:
 
         # Run detection on the clean camera frame before drawing overlays.
         # This avoids detecting our own court lines, mini-map, or debug text.
-        detections = ball_detector.detect(frame)
+        if frame_idx in cached_detections:
+            detections = cached_detections[frame_idx]
+        else:
+            detections = ball_detector.detect(frame)
+            detections_by_frame[frame_idx] = detections
 
         # Draw visualization overlays only after detection is complete.
         frame = draw_court_lines(frame, corners)
@@ -255,13 +274,16 @@ def main() -> None:
     cap.release()
     writer.release()
 
+    if detections_by_frame:
+        save_ball_detections_csv(BALL_DETECTIONS_FILE, detections_by_frame)
+        print(f"Saved ball detections: {BALL_DETECTIONS_FILE}")
+
     elapsed_time = time.time() - start_time
     processing_fps = processed_frames / elapsed_time if elapsed_time > 0 else 0.0
 
     print(f"Processed frames: {processed_frames}")
     print(f"Processing time: {elapsed_time:.2f}s")
     print(f"Processing FPS: {processing_fps:.2f}")
-
     print(f"Done: {OUTPUT_VIDEO}")
 
 

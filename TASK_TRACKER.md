@@ -122,8 +122,11 @@
 - [v] Run inference on single frame
 - [v] Run inference on full video
 - [v] Draw ball detections
-- [ ] Store detections to CSV
+- [v] Store detections to CSV
 - [v] Integrate tennis-ball-specific YOLO model
+- [x] Cache AI detections to disk
+- [x] Load cached detections
+- [x] Measure processing FPS
 ---
 
 ## Detection Quality
