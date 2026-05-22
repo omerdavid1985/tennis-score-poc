@@ -99,7 +99,6 @@
 
 ## Optional Enhancements
 
-
 - [v] Add calibration visualization
 - [ ] Add recalibration shortcut
 
@@ -116,13 +115,13 @@
 
 ## Detection Infrastructure
 
-- [ ] Create ball detector interface
+- [v] Create ball detector interface
 - [ ] Add YOLO experiment
 - [ ] Add TrackNet experiment
 - [ ] Load pretrained model
 - [ ] Run inference on single frame
-- [ ] Run inference on full video
-- [ ] Draw ball detections
+- [v] Run inference on full video
+- [v] Draw ball detections
 - [ ] Store detections to CSV
 
 ---
@@ -147,12 +146,12 @@
 
 ## Tracking Logic
 
-- [ ] Create tracking module
+- [v] Create tracking module
 - [ ] Add Kalman filter
 - [ ] Predict next ball position
 - [ ] Match detections to prediction
 - [ ] Reject impossible jumps
-- [ ] Handle temporary missed detections
+- [v] Handle temporary missed detections
 - [ ] Draw trajectory line
 - [ ] Export tracked trajectory CSV
 
