@@ -116,20 +116,20 @@
 ## Detection Infrastructure
 
 - [v] Create ball detector interface
-- [ ] Add YOLO experiment
+- [v] Add YOLO experiment
 - [ ] Add TrackNet experiment
-- [ ] Load pretrained model
-- [ ] Run inference on single frame
+- [v] Load pretrained model
+- [v] Run inference on single frame
 - [v] Run inference on full video
 - [v] Draw ball detections
 - [ ] Store detections to CSV
-
+- [v] Integrate tennis-ball-specific YOLO model
 ---
 
 ## Detection Quality
 
-- [ ] Evaluate missed detections
-- [ ] Evaluate false positives
+- [v] Evaluate missed detections
+- [v] Evaluate false positives
 - [ ] Add confidence filtering
 - [ ] Restrict detections to court region
 

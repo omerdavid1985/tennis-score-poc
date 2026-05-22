@@ -28,6 +28,8 @@ from detection.yolo_ball_detector import (
 
 from tracking.ball_tracker import BallTracker, draw_tracked_ball
 
+import time
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -157,7 +159,10 @@ def main() -> None:
     # Initialize detectors
     # -------------------------------------------------------------------------
 
-    ball_detector = YoloBallDetector()
+    ball_detector = YoloBallDetector(
+    model_path="models/ball/tennis_ball_yolov8.pt",
+    confidence_threshold=0.10,
+    )
     ball_tracker = BallTracker()
 
     # -------------------------------------------------------------------------
@@ -182,6 +187,9 @@ def main() -> None:
         fps,
         (width, height),
     )
+
+    start_time = time.time()
+    processed_frames = 0
 
     # -------------------------------------------------------------------------
     # Main frame-processing loop
@@ -238,12 +246,21 @@ def main() -> None:
 
         writer.write(frame)
 
+        processed_frames += 1
+
     # -------------------------------------------------------------------------
     # Cleanup
     # -------------------------------------------------------------------------
 
     cap.release()
     writer.release()
+
+    elapsed_time = time.time() - start_time
+    processing_fps = processed_frames / elapsed_time if elapsed_time > 0 else 0.0
+
+    print(f"Processed frames: {processed_frames}")
+    print(f"Processing time: {elapsed_time:.2f}s")
+    print(f"Processing FPS: {processing_fps:.2f}")
 
     print(f"Done: {OUTPUT_VIDEO}")
 
