@@ -2,7 +2,7 @@
 
 ## Project Status
 
-- [ ] Milestone 0 — Project Bootstrap
+- [v] Milestone 0 — Project Bootstrap
 - [ ] Milestone 1 — Manual Court Calibration
 - [ ] Milestone 2 — Ball Detection Baseline
 - [ ] Milestone 3 — Ball Tracking
@@ -17,63 +17,63 @@
 
 ## Environment Setup
 
-- [ ] Install Python 3.10 or 3.11
-- [ ] Install VS Code extensions
-  - [ ] Python
-  - [ ] Pylance
-  - [ ] Jupyter
-  - [ ] Black Formatter
-  - [ ] isort
-  - [ ] GitLens
-  - [ ] TODO Highlight
+- [v] Install Python 3.10 or 3.11
+- [v] Install VS Code extensions
+  - [v] Python
+  - [v] Pylance
+  - [v] Jupyter
+  - [v] Black Formatter
+  - [v] isort
+  - [v] GitLens
+  - [v] TODO Highlight
 
-- [ ] Create repository folder
-- [ ] Open project in VS Code
-- [ ] Create `.venv`
-- [ ] Activate virtual environment
-- [ ] Upgrade pip
-- [ ] Create `requirements.txt`
-- [ ] Install dependencies
+- [v] Create repository folder
+- [v] Open project in VS Code
+- [v] Create `.venv`
+- [v] Activate virtual environment
+- [v] Upgrade pip
+- [v] Create `requirements.txt`
+- [v] Install dependencies
 
 ---
 
 ## Project Structure
 
-- [ ] Create `data/input`
-- [ ] Create `data/output`
-- [ ] Create `src`
-- [ ] Create `src/video`
-- [ ] Create `src/detection`
-- [ ] Create `src/tracking`
-- [ ] Create `src/geometry`
-- [ ] Create `src/events`
-- [ ] Create `src/scoring`
-- [ ] Create `src/visualization`
-- [ ] Create `tests`
+- [v] Create `data/input`
+- [v] Create `data/output`
+- [v] Create `src`
+- [v] Create `src/video`
+- [v] Create `src/detection`
+- [v] Create `src/tracking`
+- [v] Create `src/geometry`
+- [v] Create `src/events`
+- [v] Create `src/scoring`
+- [v] Create `src/visualization`
+- [v] Create `tests`
 
 ---
 
 ## Video Bootstrap
 
-- [ ] Add sample tennis video
-- [ ] Create `src/main.py`
-- [ ] Open video with OpenCV
-- [ ] Read frames successfully
-- [ ] Extract FPS/frame count
-- [ ] Create output video writer
-- [ ] Draw frame number
-- [ ] Draw timestamp
-- [ ] Write annotated frames
-- [ ] Save output video
-- [ ] Verify output video plays correctly
+- [v] Add sample tennis video
+- [v] Create `src/main.py`
+- [v] Open video with OpenCV
+- [v] Read frames successfully
+- [v] Extract FPS/frame count
+- [v] Create output video writer
+- [v] Draw frame number
+- [v] Draw timestamp
+- [v] Write annotated frames
+- [v] Save output video
+- [v] Verify output video plays correctly
 
 ---
 
 ## Milestone 0 Success Criteria
 
-- [ ] `annotated_sample_match.mp4` is generated successfully
-- [ ] Output video contains frame number and timestamp overlay
-- [ ] Video processing runs end-to-end without crashing
+- [v] `annotated_sample_match.mp4` is generated successfully
+- [v] Output video contains frame number and timestamp overlay
+- [v] Video processing runs end-to-end without crashing
 
 ---
 
@@ -81,31 +81,34 @@
 
 ## Court Geometry
 
-- [ ] Create court calibration module
-- [ ] Define court dimensions
-- [ ] Add manual point selection
-- [ ] Select baseline corners
-- [ ] Select service box corners
-- [ ] Save calibration JSON
-- [ ] Load calibration JSON
-- [ ] Compute homography matrix
-- [ ] Draw court overlay
-- [ ] Validate overlay alignment
+- [v] Create court calibration module
+- [v] Add manual point selection
+- [v] Select baseline corners
+- [v] Save calibration JSON
+- [v] Load calibration JSON
+- [v] Draw court overlay
+- [v] Validate overlay alignment
 
+---
+
+## Git Setup
+- [v] Initialize Git repository
+- [v] Create `.gitignore`
+- [v] Create first Git commit
 ---
 
 ## Optional Enhancements
 
 - [ ] Draw mini top-down court
-- [ ] Add calibration visualization
+- [v] Add calibration visualization
 - [ ] Add recalibration shortcut
 
 ---
 
 ## Milestone 1 Success Criteria
 
-- [ ] Court overlay aligns correctly for full video
-- [ ] Homography transforms image points into court coordinates
+- [v] Court overlay aligns correctly for full video
+- [v] Homography transforms image points into court coordinates
 
 ---
 

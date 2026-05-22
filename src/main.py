@@ -10,6 +10,8 @@ from geometry.court_detector import (
     select_court_corners,
 )
 
+from geometry.homography import compute_image_to_court_homography, image_point_to_court
+
 INPUT_VIDEO = Path("data/input/sample_match.mp4")
 OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -41,6 +43,14 @@ def main() -> None:
         corners = select_court_corners(first_frame)
         save_court_calibration(corners, COURT_CALIBRATION_FILE)
         print(f"Saved calibration: {COURT_CALIBRATION_FILE}")
+
+    image_to_court_h = compute_image_to_court_homography(corners)
+
+    center_x = width / 2
+    center_y = height / 2
+    court_x, court_y = image_point_to_court((center_x, center_y), image_to_court_h)
+
+    print(f"Image center maps to court: x={court_x:.2f}m, y={court_y:.2f}m")
 
     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 

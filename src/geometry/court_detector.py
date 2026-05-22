@@ -6,6 +6,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from geometry.homography import compute_court_to_image_homography, get_projected_court_lines
 
 COURT_POINT_NAMES = [
     "near_left",
@@ -156,27 +157,25 @@ def load_court_calibration(input_path: Path) -> list[dict]:
 def draw_court_lines(frame: np.ndarray, corners: list[dict]) -> np.ndarray:
     output = frame.copy()
 
-    points = [(corner["x"], corner["y"]) for corner in corners]
-
-    if len(points) != 4:
+    if len(corners) != 4:
         return output
 
-    near_left, near_right, far_right, far_left = points
+    court_to_image_h = compute_court_to_image_homography(corners)
+    projected_lines = get_projected_court_lines(court_to_image_h)
 
-    # Draw only the real selected outer court polygon.
-    # Do not draw net/service/middle lines here because image-space midpoints
-    # are wrong when the camera is not centered behind the court.
-    court_lines = [
-        (near_left, near_right),
-        (near_right, far_right),
-        (far_right, far_left),
-        (far_left, near_left),
-    ]
+    for p1, p2, name in projected_lines:
+        if name == "net":
+            color = (255, 255, 0)
+            thickness = 2
+        elif "service" in name:
+            color = (0, 165, 255)
+            thickness = 2
+        else:
+            color = (0, 255, 255)
+            thickness = 3
 
-    for p1, p2 in court_lines:
-        cv2.line(output, p1, p2, (0, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(output, p1, p2, color, thickness, cv2.LINE_AA)
 
-    # Draw corner labels
     for corner in corners:
         point = (corner["x"], corner["y"])
         cv2.circle(output, point, 7, (0, 0, 255), -1)
