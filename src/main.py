@@ -269,6 +269,7 @@ def main() -> None:
         ball_event = ball_event_detector.update(
             frame_idx,
             tracked_ball,
+            image_to_court_h,
         )
 
         if ball_event is not None:

@@ -6,6 +6,11 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
+from geometry.homography import (
+    COURT_LENGTH_M,
+    SINGLES_WIDTH_M,
+    image_point_to_court,
+)
 from tracking.ball_tracker import TrackedBall
 
 
@@ -14,8 +19,7 @@ class BallEvent:
     """
     Candidate ball event.
 
-    Important:
-    This is NOT yet a confirmed tennis event.
+    This is not yet a confirmed tennis event.
     Without player detection, we cannot reliably separate:
     - bounce
     - racket hit
@@ -29,9 +33,18 @@ class BallEvent:
     event_type: str
     confidence: float
 
+    # Court coordinates in meters.
+    court_x: float | None = None
+    court_y: float | None = None
+    is_inside_court: bool = False
+
 
 @dataclass
 class BallTrackPoint:
+    """
+    One tracked ball point used by the event detector.
+    """
+
     frame_idx: int
     x: float
     y: float
@@ -40,36 +53,52 @@ class BallTrackPoint:
 
 class BallEventDetector:
     """
-    Detects trajectory-change candidates from the tracked ball.
+    Detects ball trajectory event candidates.
 
-    This module intentionally detects candidates only.
-    Later, player detection and court-position filtering will improve
-    classification into real bounces and racket hits.
+    Current goal:
+    - detect possible bounces
+    - detect generic sharp trajectory changes
+
+    Important:
+    This detector produces candidates only.
+    Later we will use player detection and better court logic
+    to classify real bounces vs racket hits.
     """
 
     def __init__(
         self,
-        min_speed_px: float = 4.0,
-        min_angle_change_deg: float = 35.0,
-        min_bounce_vy_px: float = 3.0,
-        cooldown_frames: int = 8,
+        min_speed_px: float = 3.0,
+        min_angle_change_deg: float = 45.0,
+        min_bounce_vy_px: float = 1.5,
+        cooldown_frames: int = 10,
+        court_margin_m: float = 1.0,
     ) -> None:
         self.min_speed_px = min_speed_px
         self.min_angle_change_deg = min_angle_change_deg
         self.min_bounce_vy_px = min_bounce_vy_px
         self.cooldown_frames = cooldown_frames
 
-        # Use a small temporal window:
-        # old point -> middle point -> new point
-        self.points: deque[BallTrackPoint] = deque(maxlen=5)
+        # Allow tolerance around the court because:
+        # - manual calibration is imperfect
+        # - tracker still has noise
+        # - ball center is not exactly the bounce contact point
+        self.court_margin_m = court_margin_m
 
-        # Prevent drawing/detecting the same event across many nearby frames.
+        # Keep a short history:
+        # old point -> middle point -> new point
+        #
+        # A 7-frame window is slightly smoother than 5 frames and helps
+        # catch bounces that appear as smooth direction changes.
+        self.points: deque[BallTrackPoint] = deque(maxlen=7)
+
+        # Prevent repeated detections for the same physical event.
         self.last_event_frame: int | None = None
 
     def update(
         self,
         frame_idx: int,
         tracked_ball: TrackedBall | None,
+        image_to_court_h: np.ndarray | None = None,
     ) -> BallEvent | None:
         """
         Add current tracked ball and return an event candidate if found.
@@ -78,9 +107,8 @@ class BallEventDetector:
         if tracked_ball is None:
             return None
 
-        # Predicted points are useful for drawing continuity, but they can
-        # create artificial trajectory changes. For event detection, prefer
-        # real tracker updates based on actual detections.
+        # Predicted points may create artificial direction changes.
+        # For event detection, use only points supported by real detections.
         if tracked_ball.is_predicted:
             return None
 
@@ -93,7 +121,7 @@ class BallEventDetector:
             )
         )
 
-        if len(self.points) < 5:
+        if len(self.points) < 7:
             return None
 
         if self.last_event_frame is not None:
@@ -101,9 +129,10 @@ class BallEventDetector:
                 return None
 
         p_old = self.points[0]
-        p_mid = self.points[2]
-        p_new = self.points[4]
+        p_mid = self.points[3]
+        p_new = self.points[6]
 
+        # Motion before and after the middle point.
         v_before = np.array(
             [
                 p_mid.x - p_old.x,
@@ -123,25 +152,81 @@ class BallEventDetector:
         speed_before = float(np.linalg.norm(v_before))
         speed_after = float(np.linalg.norm(v_after))
 
+        # Ignore very slow motion because tiny tracker jitter can look
+        # like a trajectory event.
         if speed_before < self.min_speed_px or speed_after < self.min_speed_px:
             return None
 
         angle_change_deg = self._angle_between_vectors(v_before, v_after)
 
-        if angle_change_deg < self.min_angle_change_deg:
-            return None
+        # --------------------------------------------------------
+        # First priority: bounce-like vertical turning point
+        #
+        # In image coordinates, y increases downward.
+        #
+        # Bounce candidate pattern:
+        # - before event: ball moves downward  -> positive y velocity
+        # - after event:  ball moves upward    -> negative y velocity
+        #
+        # This is checked before angle-change because real bounces can
+        # look smooth and may not pass a sharp angle threshold.
+        # --------------------------------------------------------
 
-        event_type = "trajectory_change_candidate"
-        confidence = min(angle_change_deg / 120.0, 1.0)
-
-        # In image coordinates, y usually increases downward.
-        # A simple bounce-like pattern is:
-        # ball moving down -> ball moving up.
-        if (
+        is_vertical_turning_point = (
             v_before[1] > self.min_bounce_vy_px
             and v_after[1] < -self.min_bounce_vy_px
-        ):
+        )
+
+        if is_vertical_turning_point:
             event_type = "bounce_candidate"
+
+            confidence = min(
+                (abs(v_before[1]) + abs(v_after[1])) / 40.0,
+                1.0,
+            )
+
+        else:
+            # ----------------------------------------------------
+            # Fallback: generic sharp trajectory change
+            #
+            # This may represent:
+            # - racket hit
+            # - net contact
+            # - unusual bounce
+            # - tracking artifact
+            # ----------------------------------------------------
+
+            if angle_change_deg < self.min_angle_change_deg:
+                return None
+
+            event_type = "trajectory_change_candidate"
+            confidence = min(angle_change_deg / 120.0, 1.0)
+
+        court_x = None
+        court_y = None
+        is_inside_court = False
+
+        if image_to_court_h is not None:
+            court_x, court_y = image_point_to_court(
+                (p_mid.x, p_mid.y),
+                image_to_court_h,
+            )
+
+            # Allow margin because calibration and tracking are not perfect.
+            is_inside_court = (
+                -self.court_margin_m
+                <= court_x
+                <= SINGLES_WIDTH_M + self.court_margin_m
+                and -self.court_margin_m
+                <= court_y
+                <= COURT_LENGTH_M + self.court_margin_m
+            )
+
+            # Bounce candidates should happen on/near the court.
+            # This will not remove racket hits inside the court yet,
+            # but it does remove impossible off-court bounces.
+            if event_type == "bounce_candidate" and not is_inside_court:
+                return None
 
         event = BallEvent(
             frame_idx=p_mid.frame_idx,
@@ -149,6 +234,9 @@ class BallEventDetector:
             y=p_mid.y,
             event_type=event_type,
             confidence=confidence,
+            court_x=court_x,
+            court_y=court_y,
+            is_inside_court=is_inside_court,
         )
 
         self.last_event_frame = frame_idx
