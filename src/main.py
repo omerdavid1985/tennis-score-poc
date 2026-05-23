@@ -52,6 +52,16 @@ from visualization.event_visualizer import (
 
 from tracking.tracking_debug_io import save_tracking_debug_csv
 
+from detection.player_detector import (
+    PlayerDetector,
+    draw_player_detections,
+)
+
+from detection.player_detection_cache import (
+    load_player_detections_csv,
+    save_player_detections_csv,
+)
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -62,6 +72,7 @@ BALL_DETECTIONS_FILE = Path("data/output/ball_detections.csv")
 TRACKED_TRAJECTORY_FILE = Path("data/output/tracked_trajectory.csv")
 BALL_EVENTS_FILE = Path("data/output/ball_events.csv")
 TRACKING_DEBUG_FILE = Path("data/output/tracking_debug.csv")
+PLAYER_DETECTIONS_FILE = Path("data/output/player_detections.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -192,6 +203,8 @@ def main() -> None:
 
     motion_filter = MotionFilter()
 
+    player_detector = PlayerDetector()
+
     ball_tracker = BallTracker(trajectory_length=120)
 
     ball_event_detector = BallEventDetector()
@@ -203,6 +216,17 @@ def main() -> None:
         print(f"Loaded cached ball detections: {BALL_DETECTIONS_FILE}")
     else:
         print("No cached ball detections found. YOLO will run.")
+
+    if PLAYER_DETECTIONS_FILE.exists():
+        print(f"Loading cached player detections: {PLAYER_DETECTIONS_FILE}")
+        player_detections_by_frame = load_player_detections_csv(
+            PLAYER_DETECTIONS_FILE
+        )
+        use_cached_player_detections = True
+    else:
+        print("No cached player detections found. Running YOLO person detector.")
+        player_detections_by_frame = {}
+        use_cached_player_detections = False
 
     # -------------------------------------------------------------------------
     # Reset video back to frame 0
@@ -292,6 +316,12 @@ def main() -> None:
             image_to_court_h,
         )
 
+        if use_cached_player_detections:
+            player_detections = player_detections_by_frame.get(frame_idx, [])
+        else:
+            player_detections = player_detector.detect(frame)
+            player_detections_by_frame[frame_idx] = player_detections
+
         if ball_event is not None:
             ball_events.append(ball_event)
         
@@ -322,6 +352,8 @@ def main() -> None:
 
         # Optional debug preview.
         frame = draw_motion_mask_preview(frame, motion_mask)
+
+        frame = draw_player_detections(frame, player_detections)
         
         # ---------------------------------------------------------------------
         # Debug information overlay
@@ -371,6 +403,14 @@ def main() -> None:
         TRACKING_DEBUG_FILE,
         tracking_debug_rows,
     )
+
+    if not use_cached_player_detections:
+        save_player_detections_csv(
+            PLAYER_DETECTIONS_FILE,
+            player_detections_by_frame,
+        )
+
+    print(f"Saved player detections: {PLAYER_DETECTIONS_FILE}")
 
     print(f"Saved tracking debug: {TRACKING_DEBUG_FILE}")
 

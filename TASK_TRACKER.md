@@ -182,13 +182,14 @@
 
 ## Player Detection
 
-- [ ] Add YOLO person detector
-- [ ] Detect players on court
+- [v] Add YOLO person detector
+- [v] Detect players on court
 - [ ] Filter spectators/background
 - [ ] Identify near-side player
 - [ ] Identify far-side player
-- [ ] Draw player boxes
+- [v] Draw player boxes
 - [ ] Export player tracks
+- [v] Cache player detections
 
 ---
 
@@ -219,7 +220,7 @@
 
 ## Hit Detection
 
-- [ ] Detect trajectory changes
+- [v] Detect trajectory changes
 - [ ] Estimate hitter proximity
 - [ ] Detect hit candidates
 - [ ] Draw hit markers
@@ -230,7 +231,7 @@
 
 - [v] Create event CSV exporter
 - [ ] Create event JSON exporter
-- [ ] Store bounce events
+- [v] Store bounce events
 - [ ] Store hit events
 
 ---
