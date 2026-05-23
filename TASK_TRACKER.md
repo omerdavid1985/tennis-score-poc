@@ -159,7 +159,7 @@
 - [v] Reject impossible jumps
 - [v] Handle temporary missed detections
 - [v] Draw trajectory line
-- [ ] Export tracked trajectory CSV
+- [v] Export tracked trajectory CSV
 
 ---
 

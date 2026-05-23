@@ -37,6 +37,8 @@ from detection.detection_io import (
 
 from detection.motion_filter import MotionFilter, draw_motion_mask_preview
 
+from tracking.trajectory_io import save_tracked_trajectory_csv
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -44,6 +46,7 @@ from detection.motion_filter import MotionFilter, draw_motion_mask_preview
 INPUT_VIDEO = Path("data/input/sample_match.mp4")
 OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
 BALL_DETECTIONS_FILE = Path("data/output/ball_detections.csv")
+TRACKED_TRAJECTORY_FILE = Path("data/output/tracked_trajectory.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -209,6 +212,7 @@ def main() -> None:
     start_time = time.time()
     processed_frames = 0
     detections_by_frame = {}
+    trajectory_by_frame = {}
 
     # -------------------------------------------------------------------------
     # Main frame-processing loop
@@ -253,6 +257,7 @@ def main() -> None:
 
         # Track only motion-filtered detections.
         tracked_ball = ball_tracker.update(motion_filtered_detections)
+        trajectory_by_frame[frame_idx] = tracked_ball
 
         # Draw visualization overlays only after detection is complete.
         frame = draw_court_lines(frame, corners)
@@ -302,6 +307,13 @@ def main() -> None:
     if detections_by_frame:
         save_ball_detections_csv(BALL_DETECTIONS_FILE, detections_by_frame)
         print(f"Saved ball detections: {BALL_DETECTIONS_FILE}")
+
+    save_tracked_trajectory_csv(
+        TRACKED_TRAJECTORY_FILE,
+        trajectory_by_frame,
+    )
+
+    print(f"Saved tracked trajectory: {TRACKED_TRAJECTORY_FILE}")
 
     elapsed_time = time.time() - start_time
     processing_fps = processed_frames / elapsed_time if elapsed_time > 0 else 0.0
