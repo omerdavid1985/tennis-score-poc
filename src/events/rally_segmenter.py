@@ -271,17 +271,26 @@ def draw_rally_state(
     state: RallyFrameState,
 ) -> np.ndarray:
     """
-    Draw current rally activity state.
+    Draw current rally state on the video frame.
     """
 
     output = frame.copy()
 
-    if state.is_active:
-        text = "RALLY ACTIVE"
+    if state.state == RallyState.RALLY:
+        text = "RALLY"
         color = (0, 255, 0)
-    else:
-        text = f"INACTIVE: {state.reason}"
+
+    elif state.state == RallyState.POINT_ENDED:
+        text = "POINT ENDED"
+        color = (0, 165, 255)
+
+    elif state.state == RallyState.IDLE:
+        text = f"IDLE: {state.reason}"
         color = (120, 120, 120)
+
+    else:
+        text = state.state.value
+        color = (255, 255, 255)
 
     cv2.putText(
         output,
