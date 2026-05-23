@@ -185,8 +185,8 @@
 - [v] Add YOLO person detector
 - [v] Detect players on court
 - [ ] Filter spectators/background
-- [ ] Identify near-side player
-- [ ] Identify far-side player
+- [v] Identify near-side player
+- [v] Identify far-side player
 - [v] Draw player boxes
 - [ ] Export player tracks
 - [v] Cache player detections

@@ -62,6 +62,8 @@ from detection.player_detection_cache import (
     save_player_detections_csv,
 )
 
+from detection.player_assignment import assign_near_far_players
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -322,6 +324,8 @@ def main() -> None:
             player_detections = player_detector.detect(frame)
             player_detections_by_frame[frame_idx] = player_detections
 
+        assigned_players = assign_near_far_players(player_detections)
+
         if ball_event is not None:
             ball_events.append(ball_event)
         
@@ -353,7 +357,12 @@ def main() -> None:
         # Optional debug preview.
         frame = draw_motion_mask_preview(frame, motion_mask)
 
-        frame = draw_player_detections(frame, player_detections)
+        frame = draw_player_detections(
+            frame,
+            player_detections,
+            near_player=assigned_players.near_player,
+            far_player=assigned_players.far_player,
+)
         
         # ---------------------------------------------------------------------
         # Debug information overlay

@@ -73,25 +73,45 @@ class PlayerDetector:
 def draw_player_detections(
     frame: np.ndarray,
     players: list[PlayerDetection],
+    near_player: PlayerDetection | None = None,
+    far_player: PlayerDetection | None = None,
 ) -> np.ndarray:
+    """
+    Draw player bounding boxes on the video frame.
+
+    If near/far assignment is available, label players accordingly.
+    """
+
     output = frame.copy()
 
     for player in players:
+
+        label = "Player"
+        color = (0, 255, 0)
+
+        if player is near_player:
+            label = "Near"
+            color = (0, 255, 255)
+
+        elif player is far_player:
+            label = "Far"
+            color = (255, 255, 0)
+
         cv2.rectangle(
             output,
             (player.x1, player.y1),
             (player.x2, player.y2),
-            (0, 255, 0),
+            color,
             2,
         )
 
         cv2.putText(
             output,
-            f"Player {player.confidence:.2f}",
+            f"{label} {player.confidence:.2f}",
             (player.x1, player.y1 - 8),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,
-            (0, 255, 0),
+            color,
             2,
             cv2.LINE_AA,
         )
