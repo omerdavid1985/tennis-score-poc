@@ -44,6 +44,12 @@ from events.ball_event_detector import (
     draw_ball_events,
 )
 
+from events.event_io import save_ball_events_csv
+
+from visualization.event_visualizer import (
+    draw_ball_events_on_mini_court,
+)
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -52,6 +58,7 @@ INPUT_VIDEO = Path("data/input/sample_match.mp4")
 OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
 BALL_DETECTIONS_FILE = Path("data/output/ball_detections.csv")
 TRACKED_TRAJECTORY_FILE = Path("data/output/tracked_trajectory.csv")
+BALL_EVENTS_FILE = Path("data/output/ball_events.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -280,6 +287,12 @@ def main() -> None:
         # Draw visualization overlays only after detection is complete.
         frame = draw_court_lines(frame, corners)
         frame = draw_mini_top_down_court(frame)
+
+        frame = draw_ball_events_on_mini_court(
+            frame,
+            ball_events,
+        )    
+        
         # Raw YOLO detections can be noisy, so draw only filtered detections for now.
         frame = draw_yolo_ball_detections(frame, motion_filtered_detections)
 
@@ -335,6 +348,13 @@ def main() -> None:
         TRACKED_TRAJECTORY_FILE,
         trajectory_by_frame,
     )
+
+    save_ball_events_csv(
+        BALL_EVENTS_FILE,
+        ball_events,
+    )
+
+    print(f"Saved ball events: {BALL_EVENTS_FILE}")
 
     print(f"Saved tracked trajectory: {TRACKED_TRAJECTORY_FILE}")
 

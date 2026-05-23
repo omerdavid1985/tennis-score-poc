@@ -210,10 +210,10 @@
 ## Bounce Detection
 
 - [ ] Smooth ball trajectory
-- [ ] Detect direction changes
-- [ ] Detect bounce candidates
+- [v] Detect direction changes
+- [v] Detect bounce candidates
 - [ ] Filter impossible bounce locations
-- [ ] Draw bounce markers
+- [v] Draw bounce markers
 
 ---
 
@@ -228,7 +228,7 @@
 
 ## Event Timeline
 
-- [ ] Create event CSV exporter
+- [v] Create event CSV exporter
 - [ ] Create event JSON exporter
 - [ ] Store bounce events
 - [ ] Store hit events
