@@ -64,6 +64,10 @@ from detection.player_detection_cache import (
 
 from detection.player_assignment import assign_near_far_players
 
+from tracking.player_tracker import PlayerTracker
+
+from tracking.player_track_io import save_player_tracks_csv
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -75,6 +79,7 @@ TRACKED_TRAJECTORY_FILE = Path("data/output/tracked_trajectory.csv")
 BALL_EVENTS_FILE = Path("data/output/ball_events.csv")
 TRACKING_DEBUG_FILE = Path("data/output/tracking_debug.csv")
 PLAYER_DETECTIONS_FILE = Path("data/output/player_detections.csv")
+PLAYER_TRACKS_FILE = Path("data/output/player_tracks.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -207,6 +212,8 @@ def main() -> None:
 
     player_detector = PlayerDetector()
 
+    player_tracker = PlayerTracker()
+
     ball_tracker = BallTracker(trajectory_length=120)
 
     ball_event_detector = BallEventDetector()
@@ -258,6 +265,7 @@ def main() -> None:
     detections_by_frame = {}
     trajectory_by_frame = {}
     tracking_debug_rows = []
+    player_tracks_by_frame = {}
 
     # -------------------------------------------------------------------------
     # Main frame-processing loop
@@ -326,13 +334,19 @@ def main() -> None:
 
         assigned_players = assign_near_far_players(player_detections)
 
+        tracked_players = player_tracker.update(
+            assigned_players
+        )
+
+        player_tracks_by_frame[frame_idx] = tracked_players
+
         if ball_event is not None:
             ball_events.append(ball_event)
         
         trajectory_by_frame[frame_idx] = tracked_ball
 
         # Draw visualization overlays only after detection is complete.
-        frame = draw_court_lines(frame, corners)
+        # frame = draw_court_lines(frame, corners)
         frame = draw_mini_top_down_court(frame)
 
         frame = draw_ball_events_on_mini_court(
@@ -341,13 +355,13 @@ def main() -> None:
         )    
         
         # Raw YOLO detections can be noisy, so draw only filtered detections for now.
-        frame = draw_yolo_ball_detections(frame, motion_filtered_detections)
+        # frame = draw_yolo_ball_detections(frame, motion_filtered_detections)
 
-        frame = draw_tracked_ball(
-            frame,
-            tracked_ball,
-            ball_tracker.trajectory,
-        )
+        # frame = draw_tracked_ball(
+        #     frame,
+        #     tracked_ball,
+        #     ball_tracker.trajectory,
+        # )
 
         frame = draw_ball_events(
             frame,
@@ -355,14 +369,12 @@ def main() -> None:
         )
 
         # Optional debug preview.
-        frame = draw_motion_mask_preview(frame, motion_mask)
+        # frame = draw_motion_mask_preview(frame, motion_mask)
 
         frame = draw_player_detections(
             frame,
-            player_detections,
-            near_player=assigned_players.near_player,
-            far_player=assigned_players.far_player,
-)
+            tracked_players,
+        )
         
         # ---------------------------------------------------------------------
         # Debug information overlay
@@ -412,6 +424,13 @@ def main() -> None:
         TRACKING_DEBUG_FILE,
         tracking_debug_rows,
     )
+
+    save_player_tracks_csv(
+        PLAYER_TRACKS_FILE,
+        player_tracks_by_frame,
+    )
+
+    print(f"Saved player tracks: {PLAYER_TRACKS_FILE}")
 
     if not use_cached_player_detections:
         save_player_detections_csv(

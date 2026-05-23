@@ -72,42 +72,40 @@ class PlayerDetector:
 
 def draw_player_detections(
     frame: np.ndarray,
-    players: list[PlayerDetection],
-    near_player: PlayerDetection | None = None,
-    far_player: PlayerDetection | None = None,
+    tracked_players,
 ) -> np.ndarray:
     """
-    Draw player bounding boxes on the video frame.
-
-    If near/far assignment is available, label players accordingly.
+    Draw tracked near/far players.
     """
 
     output = frame.copy()
 
-    for player in players:
+    for player in tracked_players:
 
-        label = "Player"
-        color = (0, 255, 0)
-
-        if player is near_player:
-            label = "Near"
+        if player.role == "Near":
             color = (0, 255, 255)
-
-        elif player is far_player:
-            label = "Far"
+        else:
             color = (255, 255, 0)
+
+        # Predicted boxes are drawn differently.
+        thickness = 1 if player.is_predicted else 2
 
         cv2.rectangle(
             output,
             (player.x1, player.y1),
             (player.x2, player.y2),
             color,
-            2,
+            thickness,
         )
+
+        label = player.role
+
+        if player.is_predicted:
+            label += " (pred)"
 
         cv2.putText(
             output,
-            f"{label} {player.confidence:.2f}",
+            label,
             (player.x1, player.y1 - 8),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,

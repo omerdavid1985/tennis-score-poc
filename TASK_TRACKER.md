@@ -188,15 +188,15 @@
 - [v] Identify near-side player
 - [v] Identify far-side player
 - [v] Draw player boxes
-- [ ] Export player tracks
+- [v] Export player tracks
 - [v] Cache player detections
 
 ---
 
 ## Tracking
 
-- [ ] Add simple player tracker
-- [ ] Maintain player IDs between frames
+- [v] Add simple player tracker
+- [v] Maintain player IDs between frames
 
 ---
 
