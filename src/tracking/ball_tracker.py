@@ -156,33 +156,117 @@ class BallTracker:
         predicted_x = float(self.kf.x[0, 0])
         predicted_y = float(self.kf.x[1, 0])
 
-        # ---------------------------------------------------------------------
-        # Associate nearest detection to prediction
-        # ---------------------------------------------------------------------
+        # --------------------------------------------------------
+        # Association step
+        #
+        # Goal:
+        # Choose the detection that best matches the predicted
+        # Kalman position and expected motion direction.
+        # --------------------------------------------------------
 
         best_detection = None
+
+        # Lower score = better candidate
+        best_score = float("inf")
+
+        # Keep for debug/validation
         best_distance = float("inf")
 
+        # Current estimated ball velocity
+        vx = float(self.kf.x[2, 0])
+        vy = float(self.kf.x[3, 0])
+
+        predicted_speed = float(np.hypot(vx, vy))
+
+        # --------------------------------------------------------
+        # Evaluate all candidate detections
+        # --------------------------------------------------------
+
         for detection in detections:
-            distance = float(
-                np.hypot(
-                    detection.x - predicted_x,
-                    detection.y - predicted_y,
-                )
+
+            # Vector from predicted position to candidate
+            dx = detection.x - predicted_x
+            dy = detection.y - predicted_y
+
+            distance = float(np.hypot(dx, dy))
+
+            # ----------------------------------------------------
+            # Dynamic gating
+            #
+            # Faster ball motion allows larger jumps.
+            # ----------------------------------------------------
+
+            max_allowed_distance = (
+                self.max_distance_px
+                + 6.0 * predicted_speed
             )
 
-            if distance < best_distance:
+            # Reject impossible jumps
+            if distance > max_allowed_distance:
+                continue
+
+            # ----------------------------------------------------
+            # Motion direction consistency
+            #
+            # Penalize candidates that move against the
+            # predicted trajectory direction.
+            # ----------------------------------------------------
+
+            direction_penalty = 0.0
+
+            if predicted_speed > 1.0 and distance > 1.0:
+
+                velocity_direction = (
+                    np.array([vx, vy], dtype=float)
+                    / predicted_speed
+                )
+
+                detection_direction = (
+                    np.array([dx, dy], dtype=float)
+                    / distance
+                )
+
+                # Dot product:
+                # +1 -> same direction
+                #  0 -> perpendicular
+                # -1 -> opposite direction
+                direction_alignment = float(
+                    np.dot(
+                        velocity_direction,
+                        detection_direction,
+                    )
+                )
+
+                direction_penalty = 1.0 - direction_alignment
+
+            # ----------------------------------------------------
+            # Final association score
+            #
+            # Lower score is better.
+            #
+            # Components:
+            # - distance
+            # - direction mismatch penalty
+            # - confidence bonus
+            # ----------------------------------------------------
+
+            score = (
+                distance
+                + 25.0 * direction_penalty
+                - 40.0 * detection.confidence
+            )
+
+            # Keep best candidate
+            if score < best_score:
+
+                best_score = score
                 best_distance = distance
                 best_detection = detection
-
         # ---------------------------------------------------------------------
         # Valid detection: correct Kalman state
         # ---------------------------------------------------------------------
 
-        if (
-            best_detection is not None
-            and best_distance <= self.max_distance_px
-        ):
+        if best_detection is not None:
             measurement = np.array(
                 [
                     [best_detection.x],

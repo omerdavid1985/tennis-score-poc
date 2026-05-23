@@ -143,8 +143,8 @@
 
 ## Milestone 2 Success Criteria
 
-- [ ] Ball visible in meaningful percentage of rally frames
-- [ ] Detection CSV exported successfully
+- [v] Ball visible in meaningful percentage of rally frames
+- [v] Detection CSV exported successfully
 
 ---
 
@@ -154,9 +154,9 @@
 
 - [v] Create tracking module
 - [v] Add Kalman filter
-- [ ] Predict next ball position
-- [ ] Match detections to prediction
-- [ ] Reject impossible jumps
+- [v] Predict next ball position
+- [v] Match detections to prediction
+- [v] Reject impossible jumps
 - [v] Handle temporary missed detections
 - [v] Draw trajectory line
 - [ ] Export tracked trajectory CSV
@@ -165,16 +165,16 @@
 
 ## Tracking Quality
 
-- [ ] Verify smooth trajectory
-- [ ] Tune tracking thresholds
+- [v] Verify smooth trajectory
+- [v] Tune tracking thresholds
 - [ ] Tune missing-frame recovery
 
 ---
 
 ## Milestone 3 Success Criteria
 
-- [ ] Ball track survives short detection failures
-- [ ] Trajectory smoother than raw detections
+- [v] Ball track survives short detection failures
+- [v] Trajectory smoother than raw detections
 
 ---
 
