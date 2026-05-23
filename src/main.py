@@ -50,6 +50,8 @@ from visualization.event_visualizer import (
     draw_ball_events_on_mini_court,
 )
 
+from tracking.tracking_debug_io import save_tracking_debug_csv
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -59,6 +61,7 @@ OUTPUT_VIDEO = Path("data/output/annotated_sample_match.mp4")
 BALL_DETECTIONS_FILE = Path("data/output/ball_detections.csv")
 TRACKED_TRAJECTORY_FILE = Path("data/output/tracked_trajectory.csv")
 BALL_EVENTS_FILE = Path("data/output/ball_events.csv")
+TRACKING_DEBUG_FILE = Path("data/output/tracking_debug.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -228,6 +231,7 @@ def main() -> None:
     processed_frames = 0
     detections_by_frame = {}
     trajectory_by_frame = {}
+    tracking_debug_rows = []
 
     # -------------------------------------------------------------------------
     # Main frame-processing loop
@@ -272,6 +276,15 @@ def main() -> None:
 
         # Track only motion-filtered detections.
         tracked_ball = ball_tracker.update(motion_filtered_detections)
+
+        tracking_debug_rows.append(
+            {
+                "frame_idx": frame_idx,
+                "num_ball_detections": len(detections),
+                "num_motion_filtered_detections": len(motion_filtered_detections),
+                "tracked_ball": tracked_ball,
+            }
+        )
 
         ball_event = ball_event_detector.update(
             frame_idx,
@@ -353,6 +366,13 @@ def main() -> None:
         BALL_EVENTS_FILE,
         ball_events,
     )
+
+    save_tracking_debug_csv(
+        TRACKING_DEBUG_FILE,
+        tracking_debug_rows,
+    )
+
+    print(f"Saved tracking debug: {TRACKING_DEBUG_FILE}")
 
     print(f"Saved ball events: {BALL_EVENTS_FILE}")
 

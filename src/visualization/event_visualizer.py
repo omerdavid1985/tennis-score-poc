@@ -34,6 +34,9 @@ def draw_ball_events_on_mini_court(
 
     for event in events:
 
+        if event.event_type != "bounce_candidate":
+                    continue
+
         if event.court_x is None or event.court_y is None:
             continue
 
