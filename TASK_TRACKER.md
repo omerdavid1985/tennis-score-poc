@@ -221,9 +221,9 @@
 ## Hit Detection
 
 - [v] Detect trajectory changes
-- [ ] Estimate hitter proximity
-- [ ] Detect hit candidates
-- [ ] Draw hit markers
+- [v] Estimate hitter proximity
+- [v] Detect hit candidates
+- [v] Draw hit markers
 
 ---
 

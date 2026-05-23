@@ -69,9 +69,14 @@ from tracking.player_tracker import PlayerTracker
 from tracking.player_track_io import save_player_tracks_csv
 
 from events.rally_segmenter import (
-        RallySegmenter,
-        draw_rally_state,
-    )
+    RallySegmenter,
+    draw_rally_state,
+)
+
+from events.shot_detector import (
+    ShotDetector,
+    draw_shot_events,
+)
 
 # -----------------------------------------------------------------------------
 # Input / output paths
@@ -226,6 +231,9 @@ def main() -> None:
     ball_event_detector = BallEventDetector()
     ball_events = []
 
+    shot_detector = ShotDetector()
+    shot_events = []
+
     cached_detections = load_ball_detections_csv(BALL_DETECTIONS_FILE)
 
     if cached_detections:
@@ -352,6 +360,14 @@ def main() -> None:
 
         player_tracks_by_frame[frame_idx] = tracked_players
 
+        shot_event = shot_detector.update(
+            ball_event,
+            tracked_players,
+        )
+
+        if shot_event is not None:
+            shot_events.append(shot_event)
+
         if ball_event is not None:
             ball_events.append(ball_event)
         
@@ -391,6 +407,11 @@ def main() -> None:
         frame = draw_rally_state(
             frame,
             rally_state,
+        )
+
+        frame = draw_shot_events(
+            frame,
+            shot_events,
         )
         
         # ---------------------------------------------------------------------
