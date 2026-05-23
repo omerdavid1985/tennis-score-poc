@@ -5,7 +5,7 @@
 - [v] Milestone 0 — Project Bootstrap
 - [v] Milestone 1 — Manual Court Calibration
 - [v] Milestone 2 — Ball Detection Baseline
-- [ ] Milestone 3 — Ball Tracking
+- [v] Milestone 3 — Ball Tracking
 - [ ] Milestone 4 — Player Detection
 - [ ] Milestone 5 — Bounce and Hit Candidates
 - [ ] Milestone 6 — Rally Segmentation

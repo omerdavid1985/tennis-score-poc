@@ -39,6 +39,11 @@ from detection.motion_filter import MotionFilter, draw_motion_mask_preview
 
 from tracking.trajectory_io import save_tracked_trajectory_csv
 
+from events.ball_event_detector import (
+    BallEventDetector,
+    draw_ball_events,
+)
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -179,6 +184,9 @@ def main() -> None:
 
     ball_tracker = BallTracker(trajectory_length=120)
 
+    ball_event_detector = BallEventDetector()
+    ball_events = []
+
     cached_detections = load_ball_detections_csv(BALL_DETECTIONS_FILE)
 
     if cached_detections:
@@ -257,6 +265,15 @@ def main() -> None:
 
         # Track only motion-filtered detections.
         tracked_ball = ball_tracker.update(motion_filtered_detections)
+
+        ball_event = ball_event_detector.update(
+            frame_idx,
+            tracked_ball,
+        )
+
+        if ball_event is not None:
+            ball_events.append(ball_event)
+        
         trajectory_by_frame[frame_idx] = tracked_ball
 
         # Draw visualization overlays only after detection is complete.
@@ -269,6 +286,11 @@ def main() -> None:
             frame,
             tracked_ball,
             ball_tracker.trajectory,
+        )
+
+        frame = draw_ball_events(
+            frame,
+            ball_events,
         )
 
         # Optional debug preview.
