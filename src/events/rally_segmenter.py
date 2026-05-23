@@ -7,16 +7,21 @@ import numpy as np
 
 from tracking.ball_tracker import TrackedBall
 
+from enum import Enum
+
+class RallyState(str, Enum):
+    IDLE = "IDLE"
+    WAITING_FOR_SERVE = "WAITING_FOR_SERVE"
+    SERVE_IN_PROGRESS = "SERVE_IN_PROGRESS"
+    RALLY = "RALLY"
+    POINT_ENDED = "POINT_ENDED"
 
 @dataclass
 class RallyFrameState:
-    """
-    Per-frame rally activity state.
-    """
-
     frame_idx: int
     is_active: bool
     reason: str
+    state: RallyState
 
 
 @dataclass
@@ -65,6 +70,9 @@ class RallySegmenter:
 
         self.frame_states: list[RallyFrameState] = []
         self.segments: list[RallySegment] = []
+
+        self.state = RallyState.IDLE
+        self.point_ended_count = 0
 
     def update(
         self,
@@ -117,6 +125,32 @@ class RallySegmenter:
                 self.is_currently_active = False
 
         # --------------------------------------------------------
+        # Explicit rally state machine
+        #
+        # First version:
+        # IDLE -> RALLY -> POINT_ENDED -> IDLE
+        #
+        # Serve-specific states are placeholders for later.
+        # --------------------------------------------------------
+
+        if self.state == RallyState.IDLE:
+            if self.is_currently_active:
+                self.state = RallyState.RALLY
+
+        elif self.state == RallyState.RALLY:
+            if not self.is_currently_active:
+                self.state = RallyState.POINT_ENDED
+                self.point_ended_count = 0
+
+        elif self.state == RallyState.POINT_ENDED:
+            self.point_ended_count += 1
+
+            if self.is_currently_active:
+                self.state = RallyState.RALLY
+            elif self.point_ended_count >= self.inactive_gap_frames:
+                self.state = RallyState.IDLE
+
+        # --------------------------------------------------------
         # Segment update uses the smoothed state, not the raw state.
         # --------------------------------------------------------
 
@@ -126,6 +160,7 @@ class RallySegmenter:
                 frame_idx=frame_idx,
                 is_active=True,
                 reason=reason,
+                state=self.state,
             )
         else:
             self._maybe_close_segment(frame_idx)
@@ -133,13 +168,14 @@ class RallySegmenter:
                 frame_idx=frame_idx,
                 is_active=False,
                 reason=reason,
+                state=self.state,
             )
 
         self.previous_ball = tracked_ball
         self.frame_states.append(state)
 
         return state
-
+    
     def _estimate_ball_speed(
         self,
         tracked_ball: TrackedBall,

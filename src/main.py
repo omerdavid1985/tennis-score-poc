@@ -78,6 +78,8 @@ from events.shot_detector import (
     draw_shot_events,
 )
 
+from events.shot_io import save_shot_events_csv
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -90,6 +92,7 @@ BALL_EVENTS_FILE = Path("data/output/ball_events.csv")
 TRACKING_DEBUG_FILE = Path("data/output/tracking_debug.csv")
 PLAYER_DETECTIONS_FILE = Path("data/output/player_detections.csv")
 PLAYER_TRACKS_FILE = Path("data/output/player_tracks.csv")
+SHOT_EVENTS_FILE = Path("data/output/shot_events.csv")
 
 # Saved calibration file so the user does not need to recalibrate every run
 COURT_CALIBRATION_FILE = Path("data/output/court_calibration.json")
@@ -469,6 +472,13 @@ def main() -> None:
     )
 
     print(f"Saved player tracks: {PLAYER_TRACKS_FILE}")
+
+    save_shot_events_csv(
+        SHOT_EVENTS_FILE,
+        shot_events,
+    )
+
+    print(f"Saved shot events: {SHOT_EVENTS_FILE}")
 
     if not use_cached_player_detections:
         save_player_detections_csv(

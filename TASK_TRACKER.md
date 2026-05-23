@@ -6,7 +6,7 @@
 - [v] Milestone 1 — Manual Court Calibration
 - [v] Milestone 2 — Ball Detection Baseline
 - [v] Milestone 3 — Ball Tracking
-- [ ] Milestone 4 — Player Detection
+- [v] Milestone 4 — Player Detection
 - [ ] Milestone 5 — Bounce and Hit Candidates
 - [ ] Milestone 6 — Rally Segmentation
 - [ ] Milestone 7 — First Scoring POC
@@ -202,7 +202,7 @@
 
 ## Milestone 4 Success Criteria
 
-- [ ] Near/far players identified consistently
+- [v] Near/far players identified consistently
 
 ---
 
@@ -251,7 +251,7 @@
 - [ ] Add WAITING_FOR_SERVE state
 - [ ] Add SERVE_IN_PROGRESS state
 - [v] Add RALLY state
-- [ ] Add POINT_ENDED state
+- [v] Add POINT_ENDED state
 
 ---
 
