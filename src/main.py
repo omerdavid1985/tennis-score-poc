@@ -68,6 +68,11 @@ from tracking.player_tracker import PlayerTracker
 
 from tracking.player_track_io import save_player_tracks_csv
 
+from events.rally_segmenter import (
+        RallySegmenter,
+        draw_rally_state,
+    )
+
 # -----------------------------------------------------------------------------
 # Input / output paths
 # -----------------------------------------------------------------------------
@@ -216,6 +221,8 @@ def main() -> None:
 
     ball_tracker = BallTracker(trajectory_length=120)
 
+    rally_segmenter = RallySegmenter()
+
     ball_event_detector = BallEventDetector()
     ball_events = []
 
@@ -320,6 +327,11 @@ def main() -> None:
             }
         )
 
+        rally_state = rally_segmenter.update(
+            frame_idx,
+            tracked_ball,
+        )
+
         ball_event = ball_event_detector.update(
             frame_idx,
             tracked_ball,
@@ -374,6 +386,11 @@ def main() -> None:
         frame = draw_player_detections(
             frame,
             tracked_players,
+        )
+
+        frame = draw_rally_state(
+            frame,
+            rally_state,
         )
         
         # ---------------------------------------------------------------------
@@ -436,6 +453,15 @@ def main() -> None:
         save_player_detections_csv(
             PLAYER_DETECTIONS_FILE,
             player_detections_by_frame,
+        )
+
+    rally_segments = rally_segmenter.finalize()
+
+    print("Rally segments:")
+    for segment in rally_segments:
+        print(
+            f"  {segment.start_frame} -> {segment.end_frame} "
+            f"({segment.duration_frames} frames)"
         )
 
     print(f"Saved player detections: {PLAYER_DETECTIONS_FILE}")

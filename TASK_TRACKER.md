@@ -246,23 +246,21 @@
 
 ## State Machine
 
-- [ ] Create rally state machine
-- [ ] Add IDLE state
+- [v] Create rally state machine
+- [v] Add IDLE state
 - [ ] Add WAITING_FOR_SERVE state
 - [ ] Add SERVE_IN_PROGRESS state
-- [ ] Add RALLY state
+- [v] Add RALLY state
 - [ ] Add POINT_ENDED state
 
 ---
 
 ## Rally Detection
 
-- [ ] Detect rally start candidates
-- [ ] Detect rally end candidates
+- [v] Detect rally start candidates
+- [v] Detect rally end candidates
 - [ ] Add confidence scoring
 - [ ] Add manual override support
-
----
 
 ## Milestone 6 Success Criteria
 
